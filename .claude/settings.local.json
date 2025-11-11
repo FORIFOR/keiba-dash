@@ -8,7 +8,10 @@
       "Bash(npm run lint:*)",
       "Bash(npm run test:unit:*)",
       "Bash(npm run build:*)",
-      "Bash(npm run test:e2e:*)"
+      "Bash(npm run test:e2e:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []

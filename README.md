@@ -1,73 +1,84 @@
-# React + TypeScript + Vite
+# Horse Racing Betting Game (競馬ベッティングゲーム)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A realistic horse racing betting simulation game built with React, TypeScript, and advanced probability algorithms.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **4 Bet Types**: Win, Place, Quinella, and Trifecta
+- **Realistic Odds**: Calculated using Plackett-Luce model with bookmaker margin
+- **Monte Carlo Simulation**: 50,000+ trials for accurate probability estimation
+- **Deterministic Races**: Seeded RNG ensures reproducible results
+- **Point System**: Start with 10,000 points, manage your bankroll
+- **Persistent State**: Game progress saved in localStorage
+- **Web Workers**: Non-blocking odds calculation in background
 
-## React Compiler
+## Quick Start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Visit `http://localhost:5173`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Bet Types Explained
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Win (単勝)
+- Pick the horse that finishes 1st
+- Higher odds, higher risk
+
+### Place (複勝)
+- Pick a horse that finishes in top 2-3
+- 8+ horses: Top 3 / 7- horses: Top 2
+- Lower odds, safer bet
+
+### Quinella (馬連)
+- Pick 2 horses that finish 1st-2nd in any order
+- Medium-high odds
+
+### Trifecta (三連単)
+- Pick 3 horses that finish 1st-2nd-3rd in exact order
+- Highest odds, most difficult
+
+## Game Rules
+
+- **Starting Bankroll**: 10,000 points
+- **Minimum Bet**: 100 points
+- **Maximum Bet**: 50% of bankroll per race
+- **Payouts**: `floor(stake × decimal_odds)`
+- **Game Over**: Bankroll = 0 (can continue)
+
+## Development Scripts
+
+```bash
+npm run dev          # Start dev server
+npm run build        # Build for production
+npm run preview      # Preview build
+npm run typecheck    # Type checking
+npm run lint         # Run ESLint
+npm run test:unit    # Run Vitest tests
+npm run test:e2e     # Run Playwright tests
 ```
+
+## Technical Details
+
+### Plackett-Luce Model
+```
+P(horse i wins) = exp(rating_i / τ) / Σ exp(rating_j / τ)
+```
+
+### Deterministic RNG
+- Mulberry32 algorithm
+- Seeded for reproducibility
+
+### Odds Calculation
+1. Win: Analytical from model
+2. Place/Quinella/Trifecta: Monte Carlo (50k trials)
+3. Bookmaker margin applied
+4. Decimal odds: `max(1.05, 1 / adjusted_prob)`
+
+## License
+
+MIT
+
+**Disclaimer**: Educational simulation only. No real money involved.

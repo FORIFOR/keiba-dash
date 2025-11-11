@@ -1,185 +1,168 @@
 /**
- * Horse Racing Game Engine
- * Pure functions with seeded RNG for deterministic race simulation
+ * Race simulation using Plackett-Luce model
+ * Generates deterministic race outcomes based on horse ratings
  */
 
-export interface Horse {
-  id: number;
-  name: string;
-  color: string;
-}
-
-export interface RaceProgress {
-  horseId: number;
-  progress: number; // 0 to 100
-}
-
-export interface RaceResult {
-  horseId: number;
-  position: number; // 1st, 2nd, 3rd, etc.
-  finishTime: number; // milliseconds
-}
-
-export interface PayoutInfo {
-  horseId: number;
-  position: number;
-  odds: number;
-  payout: number; // multiplier on bet
-}
+import { SeededRNG } from './rng';
+import type { Horse, RaceConfig } from './types';
 
 /**
- * Seeded Random Number Generator using Mulberry32
- * Returns numbers in range [0, 1)
+ * Generate horse names
  */
-export class SeededRNG {
-  private state: number;
+const HORSE_NAMES = [
+  'Thunder Bolt',
+  'Swift Wind',
+  'Golden Arrow',
+  'Midnight Star',
+  'Lucky Charm',
+  'Fire Storm',
+  'Ocean Wave',
+  'Silver Moon',
+  'Royal Flash',
+  'Dark Knight',
+  'Storm Rider',
+  'Desert Rose',
+];
 
-  constructor(seed: number) {
-    this.state = seed;
-  }
-
-  next(): number {
-    let t = (this.state += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  }
-
-  nextRange(min: number, max: number): number {
-    return min + this.next() * (max - min);
-  }
-}
-
-/**
- * Default 8 horses with distinct colors
- */
-export const DEFAULT_HORSES: Horse[] = [
-  { id: 1, name: 'Thunder Bolt', color: '#ef4444' },
-  { id: 2, name: 'Swift Wind', color: '#3b82f6' },
-  { id: 3, name: 'Golden Arrow', color: '#f59e0b' },
-  { id: 4, name: 'Midnight Star', color: '#8b5cf6' },
-  { id: 5, name: 'Lucky Charm', color: '#10b981' },
-  { id: 6, name: 'Fire Storm', color: '#f97316' },
-  { id: 7, name: 'Ocean Wave', color: '#06b6d4' },
-  { id: 8, name: 'Silver Moon', color: '#6366f1' },
+const HORSE_COLORS = [
+  '#ef4444', // red
+  '#3b82f6', // blue
+  '#f59e0b', // amber
+  '#8b5cf6', // purple
+  '#10b981', // green
+  '#f97316', // orange
+  '#06b6d4', // cyan
+  '#6366f1', // indigo
+  '#ec4899', // pink
+  '#14b8a6', // teal
+  '#f43f5e', // rose
+  '#a855f7', // violet
 ];
 
 /**
- * Generate deterministic race speeds for each horse
+ * Generate horses with random ratings
  */
-export function generateHorseSpeeds(seed: number, horseCount: number): number[] {
-  const rng = new SeededRNG(seed);
-  const speeds: number[] = [];
+export function generateHorses(config: RaceConfig): Horse[] {
+  const rng = new SeededRNG(config.seed);
+  const horses: Horse[] = [];
 
-  for (let i = 0; i < horseCount; i++) {
-    // Base speed between 0.5 and 1.5
-    const baseSpeed = rng.nextRange(0.5, 1.5);
-    speeds.push(baseSpeed);
+  for (let i = 0; i < config.numHorses; i++) {
+    horses.push({
+      id: i + 1,
+      name: HORSE_NAMES[i % HORSE_NAMES.length],
+      rating: rng.nextRange(60, 100),
+      color: HORSE_COLORS[i % HORSE_COLORS.length],
+    });
   }
 
-  return speeds;
+  return horses;
 }
 
 /**
- * Simulate race progress at a given time
- * Returns progress for each horse (0-100)
+ * Calculate Plackett-Luce weights from ratings
+ * Weight s_i = exp(rating_i / τ)
  */
-export function simulateRaceProgress(
-  seed: number,
-  horses: Horse[],
-  elapsedTime: number,
-  totalDuration: number = 5000
-): RaceProgress[] {
-  const speeds = generateHorseSpeeds(seed, horses.length);
-  const rng = new SeededRNG(seed + elapsedTime);
-
-  return horses.map((horse, index) => {
-    const baseProgress = (elapsedTime / totalDuration) * speeds[index] * 100;
-    // Add small random variation for visual interest
-    const variance = rng.nextRange(-2, 2);
-    const progress = Math.min(100, Math.max(0, baseProgress + variance));
-
-    return {
-      horseId: horse.id,
-      progress,
-    };
-  });
+export function calculateWeights(horses: Horse[], temperature: number): number[] {
+  return horses.map((horse) => Math.exp(horse.rating / temperature));
 }
 
 /**
- * Calculate finish times for all horses
+ * Sample one horse from remaining horses based on weights
+ * Using weighted random selection
  */
-export function calculateFinishTimes(seed: number, horses: Horse[]): RaceResult[] {
-  const speeds = generateHorseSpeeds(seed, horses.length);
-  const rng = new SeededRNG(seed);
+function sampleByWeight(
+  remainingIndices: number[],
+  weights: number[],
+  rng: SeededRNG
+): number {
+  // Calculate total weight of remaining horses
+  const totalWeight = remainingIndices.reduce((sum, idx) => sum + weights[idx], 0);
 
-  // Calculate finish time for each horse
-  const finishTimes = horses.map((horse, index) => {
-    const baseTime = 5000 / speeds[index];
-    // Add random variation to make races interesting
-    const variance = rng.nextRange(-500, 500);
-    return {
-      horseId: horse.id,
-      finishTime: baseTime + variance,
-    };
-  });
+  // Random value in [0, totalWeight)
+  let target = rng.next() * totalWeight;
 
-  // Sort by finish time and assign positions
-  finishTimes.sort((a, b) => a.finishTime - b.finishTime);
-
-  return finishTimes.map((result, index) => ({
-    horseId: result.horseId,
-    position: index + 1,
-    finishTime: result.finishTime,
-  }));
-}
-
-/**
- * Calculate payouts based on finish positions
- * Traditional win/place/show betting structure
- */
-export function calculatePayouts(results: RaceResult[], betAmount: number = 100): PayoutInfo[] {
-  return results.map((result) => {
-    let odds: number;
-    let payout: number;
-
-    // Calculate odds based on position
-    switch (result.position) {
-      case 1: // Win
-        odds = 5.0;
-        payout = betAmount * odds;
-        break;
-      case 2: // Place
-        odds = 3.0;
-        payout = betAmount * odds;
-        break;
-      case 3: // Show
-        odds = 2.0;
-        payout = betAmount * odds;
-        break;
-      default:
-        odds = 0;
-        payout = 0;
+  // Find the selected horse
+  for (const idx of remainingIndices) {
+    target -= weights[idx];
+    if (target <= 0) {
+      return idx;
     }
+  }
 
-    return {
-      horseId: result.horseId,
-      position: result.position,
-      odds,
-      payout,
-    };
-  });
+  // Fallback (should not reach here due to floating point)
+  return remainingIndices[remainingIndices.length - 1];
 }
 
 /**
- * Run complete race simulation
+ * Simulate race finish order using Plackett-Luce model
+ * Returns array of horse IDs in finish order [1st, 2nd, 3rd, ...]
  */
-export function runRaceSimulation(seed: number, horses: Horse[] = DEFAULT_HORSES) {
-  const results = calculateFinishTimes(seed, horses);
-  const payouts = calculatePayouts(results);
+export function simulateRace(horses: Horse[], config: RaceConfig): number[] {
+  const rng = new SeededRNG(config.seed);
+  const weights = calculateWeights(horses, config.temperature);
 
-  return {
-    results,
-    payouts,
-  };
+  const finishOrder: number[] = [];
+  const remainingIndices = horses.map((_, idx) => idx);
+
+  // Draw horses one by one until all placed
+  while (remainingIndices.length > 0) {
+    const selectedIdx = sampleByWeight(remainingIndices, weights, rng);
+    finishOrder.push(horses[selectedIdx].id);
+
+    // Remove selected horse from remaining
+    const removeIdx = remainingIndices.indexOf(selectedIdx);
+    remainingIndices.splice(removeIdx, 1);
+  }
+
+  return finishOrder;
+}
+
+/**
+ * Run multiple race simulations for Monte Carlo estimation
+ * Returns array of finish orders
+ */
+export function runMonteCarloSimulations(
+  horses: Horse[],
+  config: RaceConfig,
+  numTrials: number,
+  baseSeed?: string
+): number[][] {
+  const results: number[][] = [];
+  const seed = baseSeed || config.seed;
+
+  for (let trial = 0; trial < numTrials; trial++) {
+    // Create unique seed for each trial
+    const trialConfig = { ...config, seed: `${seed}-trial-${trial}` };
+    const finishOrder = simulateRace(horses, trialConfig);
+    results.push(finishOrder);
+  }
+
+  return results;
+}
+
+/**
+ * Generate pseudo racing history for display (optional)
+ * Shows simulated recent form based on rating
+ */
+export function generatePseudoHistory(
+  horse: Horse,
+  numRaces: number = 5,
+  seed: string
+): number[] {
+  const rng = new SeededRNG(`${seed}-${horse.id}`);
+  const history: number[] = [];
+
+  for (let i = 0; i < numRaces; i++) {
+    // Higher rating = better average finish
+    // Rating 100 -> avg ~2nd, Rating 60 -> avg ~6th
+    const avgFinish = 8 - (horse.rating - 60) / 10;
+    const variance = 2.5;
+    const finish = Math.max(
+      1,
+      Math.min(12, Math.round(rng.nextRange(avgFinish - variance, avgFinish + variance)))
+    );
+    history.push(finish);
+  }
+
+  return history;
 }
