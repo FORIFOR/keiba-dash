@@ -21,6 +21,7 @@ export function useOddsWorker() {
       if (message.type === 'progress') {
         setProgress(message.progress);
       } else if (message.type === 'result') {
+        console.log('[Hook] Received odds result');
         const oddsTable: OddsTable = {
           win: message.winOdds,
           place: message.placeOdds,
@@ -29,6 +30,7 @@ export function useOddsWorker() {
         };
         setOdds(oddsTable);
         setLoading(false);
+        console.log('[Hook] Odds set, loading=false');
       }
     };
 
@@ -38,8 +40,12 @@ export function useOddsWorker() {
   }, []);
 
   const calculateOdds = (horses: Horse[], config: RaceConfig, numTrials: number) => {
-    if (!workerRef.current) return;
+    if (!workerRef.current) {
+      console.error('[Hook] Worker not initialized');
+      return;
+    }
 
+    console.log('[Hook] Starting odds calculation', { numHorses: horses.length, numTrials });
     setLoading(true);
     setProgress(0);
     setOdds(null);

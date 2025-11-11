@@ -11,6 +11,7 @@ function App() {
     settings,
     currentHorses,
     currentBets,
+    currentOdds,
     gameOver,
     startNewGame,
     generateNewRace,
@@ -19,14 +20,21 @@ function App() {
     runRace,
     continueAfterGameOver,
     getCurrentRaceConfig,
+    setOdds,
+    setOddsLoading,
+    setOddsProgress,
+    oddsLoading,
+    oddsProgress,
   } = useGameStore();
 
-  const { calculateOdds, loading: oddsLoading, progress, odds } = useOddsWorker();
+  const { calculateOdds, loading: workerLoading, progress: workerProgress, odds: workerOdds } = useOddsWorker();
   const [betType, setBetType] = useState<BetType>('win');
   const [selectedHorses, setSelectedHorses] = useState<number[]>([]);
   const [stake, setStake] = useState(MIN_BET);
   const [showResult, setShowResult] = useState(false);
   const [lastResult, setLastResult] = useState<ReturnType<typeof runRace> | null>(null);
+  const [isRacing, setIsRacing] = useState(false);
+  const [raceProgress, setRaceProgress] = useState<Record<number, number>>({});
 
   // Initialize game on first load
   useEffect(() => {
@@ -38,12 +46,27 @@ function App() {
 
   // Calculate odds when horses change
   useEffect(() => {
-    if (currentHorses.length > 0 && !odds) {
+    if (currentHorses.length > 0 && !currentOdds) {
       const config = getCurrentRaceConfig();
       calculateOdds(currentHorses, config, settings.monteCarloTrials);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentHorses]);
+
+  // Sync worker state to store
+  useEffect(() => {
+    setOddsLoading(workerLoading);
+  }, [workerLoading, setOddsLoading]);
+
+  useEffect(() => {
+    setOddsProgress(workerProgress);
+  }, [workerProgress, setOddsProgress]);
+
+  useEffect(() => {
+    if (workerOdds) {
+      setOdds(workerOdds);
+    }
+  }, [workerOdds, setOdds]);
 
   const handleAddBet = () => {
     const requiredHorses = betType === 'win' || betType === 'place' ? 1 : betType === 'quinella' ? 2 : 3;
@@ -64,16 +87,59 @@ function App() {
   };
 
   const handleRunRace = () => {
+    // Start race animation
+    setIsRacing(true);
+    setRaceProgress({});
+
+    // Get race result
     const result = runRace();
-    if (result) {
-      setLastResult(result);
-      setShowResult(true);
-    }
+    if (!result) return;
+
+    // Animate race for 5 seconds
+    const RACE_DURATION = 5000;
+    const startTime = Date.now();
+
+    const finishOrder = result.result.finishOrder;
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(1, elapsed / RACE_DURATION);
+
+      if (progress >= 1) {
+        // Race finished - show final positions
+        const finalProgress: Record<number, number> = {};
+        finishOrder.forEach((horseId, index) => {
+          // Winners finish at 100%, others spread out based on position
+          finalProgress[horseId] = 100 - (index * 2);
+        });
+        setRaceProgress(finalProgress);
+        setIsRacing(false);
+        setLastResult(result);
+        setShowResult(true);
+        return;
+      }
+
+      // Update progress for each horse
+      const currentProgress: Record<number, number> = {};
+      finishOrder.forEach((horseId, index) => {
+        // Each horse progresses at different rate based on final position
+        // Add some randomness for visual interest
+        const baseSpeed = 1 - (index * 0.08);
+        const randomVariation = Math.sin(elapsed / 100 + horseId) * 3;
+        currentProgress[horseId] = (progress * baseSpeed * 100) + randomVariation;
+      });
+      setRaceProgress(currentProgress);
+
+      requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
   };
 
   const handleNextRace = () => {
     setShowResult(false);
     setLastResult(null);
+    setRaceProgress({});
     generateNewRace();
   };
 
@@ -88,9 +154,9 @@ function App() {
   };
 
   const getOddsForHorse = (horseId: number, type: BetType) => {
-    if (!odds) return '-';
-    if (type === 'win') return odds.win[horseId - 1].toFixed(2);
-    if (type === 'place') return odds.place[horseId - 1].toFixed(2);
+    if (!currentOdds) return '-';
+    if (type === 'win') return currentOdds.win[horseId - 1].toFixed(2);
+    if (type === 'place') return currentOdds.place[horseId - 1].toFixed(2);
     return '-';
   };
 
@@ -174,10 +240,10 @@ function App() {
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-blue-600 h-2 rounded-full transition-all"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${oddsProgress}%` }}
                 />
               </div>
-              <p className="text-sm text-center mt-1">Calculating odds... {progress}%</p>
+              <p className="text-sm text-center mt-1">Calculating odds... {oddsProgress}%</p>
             </div>
           )}
           <div className="overflow-x-auto">
@@ -222,6 +288,41 @@ function App() {
               </tbody>
             </table>
           </div>
+
+          {/* Race Track Animation */}
+          {(isRacing || Object.keys(raceProgress).length > 0) && (
+            <div className="mt-6 bg-gray-900 p-4 rounded-lg">
+              <h3 className="text-lg font-bold mb-4 text-center">
+                {isRacing ? '🏁 Racing... 🏁' : '🏆 Race Finished! 🏆'}
+              </h3>
+              <div className="space-y-3">
+                {currentHorses.map((horse) => {
+                  const progress = raceProgress[horse.id] || 0;
+                  return (
+                    <div key={horse.id} className="flex items-center gap-3">
+                      <div className="w-32 text-sm font-semibold" style={{ color: horse.color }}>
+                        {horse.name}
+                      </div>
+                      <div className="flex-1 bg-gray-700 h-8 rounded-full overflow-hidden relative">
+                        <div
+                          className="h-full transition-all duration-100 flex items-center justify-end pr-2"
+                          style={{
+                            width: `${Math.min(100, Math.max(0, progress))}%`,
+                            backgroundColor: horse.color,
+                          }}
+                        >
+                          <span className="text-2xl">🐴</span>
+                        </div>
+                      </div>
+                      <div className="w-16 text-right text-sm font-mono">
+                        {Math.round(progress)}%
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bet Slip */}
@@ -298,11 +399,11 @@ function App() {
 
           <button
             onClick={handleRunRace}
-            disabled={currentBets.length === 0 || oddsLoading || totalStake > bankroll}
+            disabled={currentBets.length === 0 || oddsLoading || totalStake > bankroll || isRacing}
             className="w-full mt-4 px-4 py-3 bg-blue-600 rounded hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed font-bold"
             data-testid="start-race-btn"
           >
-            Start Race
+            {isRacing ? 'Racing...' : 'Start Race'}
           </button>
         </div>
       </div>

@@ -41,6 +41,8 @@ export type WorkerMessage = WorkerProgress | WorkerResult;
 self.onmessage = (event: MessageEvent<WorkerInput>) => {
   const { horses, config, numTrials } = event.data;
 
+  console.log('[Worker] Received request:', { numHorses: horses.length, numTrials });
+
   try {
     // Run simulations with progress updates
     const batchSize = Math.max(1000, Math.floor(numTrials / 10));
@@ -99,9 +101,10 @@ self.onmessage = (event: MessageEvent<WorkerInput>) => {
       quinellaOdds,
       trifectaOdds,
     };
+    console.log('[Worker] Sending result');
     self.postMessage(result);
   } catch (error) {
-    console.error('Worker error:', error);
+    console.error('[Worker] Error:', error);
     self.postMessage({ type: 'error', error: String(error) });
   }
 };
