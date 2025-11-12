@@ -163,6 +163,42 @@ export function TrifectaLearning() {
           </div>
         </div>
 
+        {/* Prediction Accuracy */}
+        {predictorStats.accuracy.totalPredictions > 0 && (
+          <div className="bg-slate-700 rounded p-4">
+            <h3 className="font-semibold mb-2 text-lg">🎯 Prediction Accuracy</h3>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="bg-slate-800 rounded p-2">
+                <div className="text-slate-400 text-xs">Exact Match (3/3)</div>
+                <div className="text-xl font-bold text-green-400">
+                  {predictorStats.accuracy.exactMatchRate.toFixed(1)}%
+                </div>
+                <div className="text-xs text-slate-500">
+                  {predictorStats.accuracy.exactMatches}/{predictorStats.accuracy.totalPredictions}
+                </div>
+              </div>
+              <div className="bg-slate-800 rounded p-2">
+                <div className="text-slate-400 text-xs">Partial (2/3)</div>
+                <div className="text-xl font-bold text-blue-400">
+                  {predictorStats.accuracy.partialMatchRate.toFixed(1)}%
+                </div>
+                <div className="text-xs text-slate-500">
+                  {predictorStats.accuracy.partialMatches}/{predictorStats.accuracy.totalPredictions}
+                </div>
+              </div>
+              <div className="bg-slate-800 rounded p-2 col-span-2">
+                <div className="text-slate-400 text-xs">Any Match (1-3/3)</div>
+                <div className="text-xl font-bold text-yellow-400">
+                  {predictorStats.accuracy.anyMatchRate.toFixed(1)}%
+                </div>
+                <div className="text-xs text-slate-500">
+                  Total predictions: {predictorStats.accuracy.totalPredictions}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Learning Stats */}
         <div className="bg-slate-700 rounded p-4">
           <h3 className="font-semibold mb-2 text-lg">Session Statistics</h3>

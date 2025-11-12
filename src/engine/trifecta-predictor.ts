@@ -31,6 +31,13 @@ export interface PatternAnalysis {
 export class TrifectaPredictor {
   private raceHistory: RaceDataPoint[] = [];
   private readonly MAX_HISTORY = 1000; // Keep last 1000 races
+  private predictionAccuracy = {
+    totalPredictions: 0,
+    exactMatches: 0, // All 3 horses in exact order
+    partialMatches: 0, // 2 out of 3 horses correct
+    singleMatches: 0, // 1 out of 3 horses correct
+  };
+  private lastPrediction: TrifectaPrediction | null = null;
 
   /**
    * Record a race result for learning
@@ -43,23 +50,68 @@ export class TrifectaPredictor {
       this.raceHistory.shift();
     }
 
+    // Check prediction accuracy
+    if (this.lastPrediction) {
+      this.evaluatePrediction(this.lastPrediction, dataPoint.actualResult);
+    }
+
     console.log(`[Predictor] Recorded race #${dataPoint.raceNumber}. Total data points: ${this.raceHistory.length}`);
+  }
+
+  /**
+   * Evaluate how accurate the prediction was
+   */
+  private evaluatePrediction(prediction: TrifectaPrediction, actualResult: number[]): void {
+    this.predictionAccuracy.totalPredictions++;
+
+    const predicted = prediction.horses;
+    const actual = actualResult.slice(0, 3); // Top 3 finishers
+
+    // Check exact match (all 3 in exact order)
+    if (predicted[0] === actual[0] && predicted[1] === actual[1] && predicted[2] === actual[2]) {
+      this.predictionAccuracy.exactMatches++;
+      console.log('🎯 [Predictor] EXACT MATCH! Predicted:', predicted, 'Actual:', actual);
+      return;
+    }
+
+    // Check partial matches
+    const predictedSet = new Set(predicted);
+    const matches = actual.filter(h => predictedSet.has(h)).length;
+
+    if (matches === 2) {
+      this.predictionAccuracy.partialMatches++;
+      console.log('✓ [Predictor] Partial match (2/3):', predicted, 'Actual:', actual);
+    } else if (matches === 1) {
+      this.predictionAccuracy.singleMatches++;
+      console.log('~ [Predictor] Single match (1/3):', predicted, 'Actual:', actual);
+    } else {
+      console.log('✗ [Predictor] No match:', predicted, 'Actual:', actual);
+    }
   }
 
   /**
    * Predict trifecta based on current odds and historical data
    */
   predict(horses: Horse[], odds: OddsTable): TrifectaPrediction[] {
+    let predictions: TrifectaPrediction[];
+
     if (this.raceHistory.length < 10) {
       // Not enough data, use simple odds-based prediction
-      return this.predictByOdds(horses, odds);
+      predictions = this.predictByOdds(horses, odds);
+    } else {
+      // Analyze patterns from history
+      const patterns = this.analyzePatterns();
+
+      // Generate predictions using learned patterns
+      predictions = this.predictWithPatterns(horses, odds, patterns);
     }
 
-    // Analyze patterns from history
-    const patterns = this.analyzePatterns();
+    // Store the top prediction for evaluation
+    if (predictions.length > 0) {
+      this.lastPrediction = predictions[0];
+    }
 
-    // Generate predictions using learned patterns
-    return this.predictWithPatterns(horses, odds, patterns);
+    return predictions;
   }
 
   /**
@@ -264,9 +316,25 @@ export class TrifectaPredictor {
    * Get prediction statistics
    */
   getStats() {
+    const exactMatchRate = this.predictionAccuracy.totalPredictions > 0
+      ? (this.predictionAccuracy.exactMatches / this.predictionAccuracy.totalPredictions) * 100
+      : 0;
+    const partialMatchRate = this.predictionAccuracy.totalPredictions > 0
+      ? (this.predictionAccuracy.partialMatches / this.predictionAccuracy.totalPredictions) * 100
+      : 0;
+    const anyMatchRate = this.predictionAccuracy.totalPredictions > 0
+      ? ((this.predictionAccuracy.exactMatches + this.predictionAccuracy.partialMatches + this.predictionAccuracy.singleMatches) / this.predictionAccuracy.totalPredictions) * 100
+      : 0;
+
     return {
       totalRaces: this.raceHistory.length,
       readyForPrediction: this.raceHistory.length >= 10,
+      accuracy: {
+        ...this.predictionAccuracy,
+        exactMatchRate,
+        partialMatchRate,
+        anyMatchRate,
+      },
     };
   }
 
