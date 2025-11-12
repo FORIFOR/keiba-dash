@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - racing_game
   workflow_dispatch:
 
 permissions:
