@@ -38,9 +38,10 @@ test.describe('Horse Racing Betting Game', () => {
     await page.waitForSelector('text=Race Result', { timeout: 10000 });
 
     // Check result is displayed
-    await expect(page.locator('text=Finish Order:')).toBeVisible();
-    await expect(page.locator('text=Total Stake:')).toBeVisible();
-    await expect(page.locator('text=Total Payout:')).toBeVisible();
+    const resultModal = page.locator('h2:has-text("Race Result")').locator('..');
+    await expect(resultModal.locator('text=Finish Order:')).toBeVisible();
+    await expect(resultModal.locator('text=Total Stake:')).toBeVisible();
+    await expect(resultModal.locator('text=Total Payout:')).toBeVisible();
   });
 
   test('should handle multiple bet types', async ({ page }) => {

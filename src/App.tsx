@@ -3,6 +3,7 @@ import { useGameStore } from './state/store';
 import { useOddsWorker } from './hooks/useOddsWorker';
 import type { Bet, BetType } from './engine/types';
 import { MIN_BET, INITIAL_BANKROLL } from './engine/types';
+import { TrifectaLearning } from './components/TrifectaLearning';
 
 function App() {
   const {
@@ -230,6 +231,11 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Trifecta Learning Panel */}
+      <div className="mb-4">
+        <TrifectaLearning />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Horses Table */}
