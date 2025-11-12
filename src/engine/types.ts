@@ -19,6 +19,8 @@ export interface RaceConfig {
 
 export type Difficulty = 'easy' | 'standard' | 'hard';
 
+export type GameMode = 'limited' | 'unlimited';
+
 export interface OddsTable {
   win: number[]; // Decimal odds for each horse
   place: number[]; // Decimal odds for place bets
@@ -68,6 +70,7 @@ export interface HistoryEntry {
 }
 
 export interface GameSettings {
+  gameMode: GameMode;
   difficulty: Difficulty;
   numHorses: number;
   showRatings: boolean;
@@ -108,6 +111,7 @@ export const DIFFICULTY_CONFIGS: Record<Difficulty, Partial<RaceConfig>> = {
 };
 
 export const DEFAULT_SETTINGS: GameSettings = {
+  gameMode: 'limited',
   difficulty: 'standard',
   numHorses: 16,
   showRatings: false,

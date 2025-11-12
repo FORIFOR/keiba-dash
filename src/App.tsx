@@ -192,10 +192,32 @@ function App() {
     <div className="min-h-screen p-4">
       <header className="bg-gray-800 p-4 rounded-lg mb-4">
         <h1 className="text-3xl font-bold text-center">Horse Racing Betting Game</h1>
-        <div className="flex justify-between mt-2 text-sm">
-          <span>Bankroll: <span className="text-yellow-400 font-bold">{bankroll}pt</span></span>
+        <div className="flex justify-between mt-2 text-sm items-center">
+          <span>
+            Bankroll: <span className={`font-bold ${bankroll >= 0 ? 'text-yellow-400' : 'text-red-400'}`}>
+              {bankroll >= 0 ? '' : '-'}{Math.abs(bankroll)}pt
+            </span>
+            {settings.gameMode === 'unlimited' && <span className="ml-2 text-green-400">(Unlimited)</span>}
+          </span>
           <span>Race #{raceNumber}</span>
-          <span className="capitalize">{settings.difficulty} Mode</span>
+          <div className="flex gap-2 items-center">
+            <select
+              value={settings.gameMode}
+              onChange={(e) => {
+                const newMode = e.target.value as 'limited' | 'unlimited';
+                useGameStore.getState().updateSettings({ gameMode: newMode });
+                if (newMode === 'limited' && bankroll < 0) {
+                  useGameStore.getState().updateSettings({ gameMode: 'limited' });
+                  alert('Switching to Limited Mode. Your bankroll will be reset to 10000pt on next game.');
+                }
+              }}
+              className="px-3 py-1 bg-gray-700 rounded text-sm"
+            >
+              <option value="limited">10000pt Mode</option>
+              <option value="unlimited">Unlimited Mode</option>
+            </select>
+            <span className="capitalize text-slate-400">{settings.difficulty}</span>
+          </div>
         </div>
       </header>
 
@@ -405,15 +427,21 @@ function App() {
             )}
             <div className="mt-4 pt-4 border-t border-gray-700">
               <p className="font-bold">Total Stake: {totalStake}pt</p>
-              <p className="text-sm text-gray-400">
-                Max: {Math.floor(bankroll * settings.maxBetPercentage)}pt
-              </p>
+              {settings.gameMode === 'limited' ? (
+                <p className="text-sm text-gray-400">
+                  Max: {Math.floor(bankroll * settings.maxBetPercentage)}pt
+                </p>
+              ) : (
+                <p className="text-sm text-green-400">
+                  Unlimited betting enabled
+                </p>
+              )}
             </div>
           </div>
 
           <button
             onClick={handleRunRace}
-            disabled={currentBets.length === 0 || oddsLoading || totalStake > bankroll || isRacing}
+            disabled={currentBets.length === 0 || oddsLoading || (settings.gameMode === 'limited' && totalStake > bankroll) || isRacing}
             className="w-full mt-4 px-4 py-3 bg-blue-600 rounded hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed font-bold"
             data-testid="start-race-btn"
           >

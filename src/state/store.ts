@@ -209,11 +209,11 @@ export const useGameStore = create<GameStore>()(
           roi,
         };
 
-        // Check game over
-        const isGameOver = newBankroll <= 0;
+        // Check game over (only in limited mode)
+        const isGameOver = state.settings.gameMode === 'limited' && newBankroll <= 0;
 
         set({
-          bankroll: Math.max(0, newBankroll),
+          bankroll: state.settings.gameMode === 'unlimited' ? newBankroll : Math.max(0, newBankroll),
           raceNumber: state.raceNumber + 1,
           history: [...state.history, historyEntry],
           raceInProgress: false,
