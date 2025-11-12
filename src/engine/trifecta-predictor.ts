@@ -28,6 +28,12 @@ export interface PatternAnalysis {
   upsetFrequency: number;
 }
 
+export interface OddsPattern {
+  oddsDistribution: number[]; // Normalized odds for all horses
+  trifecta: [number, number, number]; // Actual result
+  similarity?: number; // Similarity score to current race
+}
+
 export class TrifectaPredictor {
   private raceHistory: RaceDataPoint[] = [];
   private readonly MAX_HISTORY = 1000; // Keep last 1000 races
@@ -99,11 +105,16 @@ export class TrifectaPredictor {
       // Not enough data, use simple odds-based prediction
       predictions = this.predictByOdds(horses, odds);
     } else {
-      // Analyze patterns from history
-      const patterns = this.analyzePatterns();
+      // Use odds pattern matching for better predictions
+      const patternPrediction = this.predictByOddsPattern(horses, odds);
 
-      // Generate predictions using learned patterns
-      predictions = this.predictWithPatterns(horses, odds, patterns);
+      if (patternPrediction) {
+        predictions = [patternPrediction];
+      } else {
+        // Fallback to original method
+        const patterns = this.analyzePatterns();
+        predictions = this.predictWithPatterns(horses, odds, patterns);
+      }
     }
 
     // Store the top prediction for evaluation
@@ -112,6 +123,115 @@ export class TrifectaPredictor {
     }
 
     return predictions;
+  }
+
+  /**
+   * Normalize odds distribution for pattern matching
+   */
+  private normalizeOdds(horses: Horse[], odds: OddsTable): number[] {
+    const winOdds = horses.map((_, idx) => odds.win[idx]);
+    const minOdds = Math.min(...winOdds);
+    const maxOdds = Math.max(...winOdds);
+    const range = maxOdds - minOdds || 1;
+
+    // Normalize to 0-1 range
+    return winOdds.map(o => (o - minOdds) / range);
+  }
+
+  /**
+   * Calculate similarity between two odds distributions
+   */
+  private calculateOddsSimilarity(dist1: number[], dist2: number[]): number {
+    if (dist1.length !== dist2.length) return 0;
+
+    // Calculate Euclidean distance
+    let sumSquaredDiff = 0;
+    for (let i = 0; i < dist1.length; i++) {
+      const diff = dist1[i] - dist2[i];
+      sumSquaredDiff += diff * diff;
+    }
+
+    const distance = Math.sqrt(sumSquaredDiff);
+
+    // Convert to similarity (0-1, higher is more similar)
+    const maxDistance = Math.sqrt(dist1.length); // Maximum possible distance
+    return Math.max(0, 1 - (distance / maxDistance));
+  }
+
+  /**
+   * Predict trifecta by finding similar odds patterns in history
+   */
+  private predictByOddsPattern(horses: Horse[], odds: OddsTable): TrifectaPrediction | null {
+    if (this.raceHistory.length < 20) return null;
+
+    const currentPattern = this.normalizeOdds(horses, odds);
+    const similarPatterns: OddsPattern[] = [];
+
+    // Find similar races from history
+    for (const race of this.raceHistory) {
+      const historicalPattern = this.normalizeOdds(race.horses, race.odds);
+      const similarity = this.calculateOddsSimilarity(currentPattern, historicalPattern);
+
+      if (similarity > 0.7) { // Only consider highly similar patterns
+        similarPatterns.push({
+          oddsDistribution: historicalPattern,
+          trifecta: race.trifecta,
+          similarity,
+        });
+      }
+    }
+
+    if (similarPatterns.length === 0) return null;
+
+    // Sort by similarity
+    similarPatterns.sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
+
+    // Find most common trifecta among similar patterns
+    const trifectaFrequency = new Map<string, { count: number; trifecta: [number, number, number]; avgSimilarity: number }>();
+
+    for (const pattern of similarPatterns.slice(0, 10)) { // Top 10 similar races
+      const key = pattern.trifecta.join('-');
+      const existing = trifectaFrequency.get(key);
+
+      if (existing) {
+        existing.count++;
+        existing.avgSimilarity += pattern.similarity || 0;
+      } else {
+        trifectaFrequency.set(key, {
+          count: 1,
+          trifecta: pattern.trifecta,
+          avgSimilarity: pattern.similarity || 0,
+        });
+      }
+    }
+
+    // Find most frequent trifecta
+    let bestTrifecta: [number, number, number] | null = null;
+    let maxScore = 0;
+
+    for (const [, data] of trifectaFrequency) {
+      const score = data.count * (data.avgSimilarity / data.count);
+      if (score > maxScore) {
+        maxScore = score;
+        bestTrifecta = data.trifecta;
+      }
+    }
+
+    if (!bestTrifecta) return null;
+
+    const trifectaKey = bestTrifecta.join('-');
+    const confidence = Math.min(95, Math.round(
+      (similarPatterns[0].similarity || 0) * 100 * (trifectaFrequency.get(trifectaKey)!.count / similarPatterns.length)
+    ));
+
+    console.log(`[Predictor] Pattern match found! Similarity: ${(similarPatterns[0].similarity! * 100).toFixed(1)}%, Similar races: ${similarPatterns.length}`);
+
+    return {
+      horses: bestTrifecta,
+      confidence,
+      expectedOdds: odds.trifecta.get(trifectaKey) || 100,
+      reasoning: `Pattern matching: ${similarPatterns.length} similar races found (${(similarPatterns[0].similarity! * 100).toFixed(1)}% match)`,
+    };
   }
 
   /**
