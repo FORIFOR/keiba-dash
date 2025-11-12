@@ -22,6 +22,10 @@ const HORSE_NAMES = [
   'Dark Knight',
   'Storm Rider',
   'Desert Rose',
+  'Crimson Blaze',
+  'Shadow Hunter',
+  'Phoenix Wings',
+  'Crystal Dream',
 ];
 
 const HORSE_COLORS = [
@@ -37,6 +41,10 @@ const HORSE_COLORS = [
   '#14b8a6', // teal
   '#f43f5e', // rose
   '#a855f7', // violet
+  '#dc2626', // dark red
+  '#1d4ed8', // dark blue
+  '#84cc16', // lime
+  '#7c3aed', // dark purple
 ];
 
 /**

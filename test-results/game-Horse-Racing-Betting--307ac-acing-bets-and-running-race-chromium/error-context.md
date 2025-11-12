@@ -1,0 +1,173 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Horse Racing Betting Game" [level=1] [ref=e5]
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - text: "Bankroll:"
+        - generic [ref=e8]: 9900pt
+      - generic [ref=e9]: "Race #2"
+      - generic [ref=e10]: standard Mode
+  - generic [ref=e12]:
+    - heading "Race Result" [level=2] [ref=e13]
+    - generic [ref=e14]:
+      - heading "Finish Order:" [level=3] [ref=e15]
+      - generic [ref=e16]:
+        - generic [ref=e17]: "1."
+        - generic [ref=e18]: Fire Storm
+      - generic [ref=e19]:
+        - generic [ref=e20]: "2."
+        - generic [ref=e21]: Golden Arrow
+      - generic [ref=e22]:
+        - generic [ref=e23]: "3."
+        - generic [ref=e24]: Ocean Wave
+      - generic [ref=e25]:
+        - generic [ref=e26]: "4."
+        - generic [ref=e27]: Silver Moon
+      - generic [ref=e28]:
+        - generic [ref=e29]: "5."
+        - generic [ref=e30]: Swift Wind
+      - generic [ref=e31]:
+        - generic [ref=e32]: "6."
+        - generic [ref=e33]: Lucky Charm
+      - generic [ref=e34]:
+        - generic [ref=e35]: "7."
+        - generic [ref=e36]: Midnight Star
+      - generic [ref=e37]:
+        - generic [ref=e38]: "8."
+        - generic [ref=e39]: Thunder Bolt
+    - generic [ref=e40]:
+      - paragraph [ref=e41]: "Total Stake: 100pt"
+      - paragraph [ref=e42]: "Total Payout: 0pt"
+      - paragraph [ref=e43]: "Net Profit: -100pt"
+    - button "Next Race" [ref=e44] [cursor=pointer]
+  - generic [ref=e45]:
+    - generic [ref=e46]:
+      - heading "Horses" [level=2] [ref=e47]
+      - table [ref=e49]:
+        - rowgroup [ref=e50]:
+          - row "Select Horse Win Place" [ref=e51]:
+            - cell "Select" [ref=e52]
+            - cell "Horse" [ref=e53]
+            - cell "Win" [ref=e54]
+            - cell "Place" [ref=e55]
+        - rowgroup [ref=e56]:
+          - row "Thunder Bolt 12.73 11.26" [ref=e57]:
+            - cell [ref=e58]:
+              - checkbox [ref=e59]
+            - cell "Thunder Bolt" [ref=e60]:
+              - generic [ref=e63]: Thunder Bolt
+            - cell "12.73" [ref=e64]
+            - cell "11.26" [ref=e65]
+          - row "Swift Wind 5.56 5.48" [ref=e66]:
+            - cell [ref=e67]:
+              - checkbox [ref=e68]
+            - cell "Swift Wind" [ref=e69]:
+              - generic [ref=e72]: Swift Wind
+            - cell "5.56" [ref=e73]
+            - cell "5.48" [ref=e74]
+          - row "Golden Arrow 3.17 3.81" [ref=e75]:
+            - cell [ref=e76]:
+              - checkbox [ref=e77]
+            - cell "Golden Arrow" [ref=e78]:
+              - generic [ref=e81]: Golden Arrow
+            - cell "3.17" [ref=e82]
+            - cell "3.81" [ref=e83]
+          - row "Midnight Star 10.33 9.25" [ref=e84]:
+            - cell [ref=e85]:
+              - checkbox [ref=e86]
+            - cell "Midnight Star" [ref=e87]:
+              - generic [ref=e90]: Midnight Star
+            - cell "10.33" [ref=e91]
+            - cell "9.25" [ref=e92]
+          - row "Lucky Charm 8.45 7.81" [ref=e93]:
+            - cell [ref=e94]:
+              - checkbox [ref=e95]
+            - cell "Lucky Charm" [ref=e96]:
+              - generic [ref=e99]: Lucky Charm
+            - cell "8.45" [ref=e100]
+            - cell "7.81" [ref=e101]
+          - row "Fire Storm 6.45 6.23" [ref=e102]:
+            - cell [ref=e103]:
+              - checkbox [ref=e104]
+            - cell "Fire Storm" [ref=e105]:
+              - generic [ref=e108]: Fire Storm
+            - cell "6.45" [ref=e109]
+            - cell "6.23" [ref=e110]
+          - row "Ocean Wave 14.92 13.01" [ref=e111]:
+            - cell [ref=e112]:
+              - checkbox [ref=e113]
+            - cell "Ocean Wave" [ref=e114]:
+              - generic [ref=e117]: Ocean Wave
+            - cell "14.92" [ref=e118]
+            - cell "13.01" [ref=e119]
+          - row "Silver Moon 5.93 5.79" [ref=e120]:
+            - cell [ref=e121]:
+              - checkbox [ref=e122]
+            - cell "Silver Moon" [ref=e123]:
+              - generic [ref=e126]: Silver Moon
+            - cell "5.93" [ref=e127]
+            - cell "5.79" [ref=e128]
+      - generic [ref=e129]:
+        - heading "🏆 Race Finished! 🏆" [level=3] [ref=e130]
+        - generic [ref=e131]:
+          - generic [ref=e132]:
+            - generic [ref=e133]: Thunder Bolt
+            - generic [ref=e136]: 🐴
+            - generic [ref=e137]: 86%
+          - generic [ref=e138]:
+            - generic [ref=e139]: Swift Wind
+            - generic [ref=e142]: 🐴
+            - generic [ref=e143]: 92%
+          - generic [ref=e144]:
+            - generic [ref=e145]: Golden Arrow
+            - generic [ref=e148]: 🐴
+            - generic [ref=e149]: 98%
+          - generic [ref=e150]:
+            - generic [ref=e151]: Midnight Star
+            - generic [ref=e154]: 🐴
+            - generic [ref=e155]: 88%
+          - generic [ref=e156]:
+            - generic [ref=e157]: Lucky Charm
+            - generic [ref=e160]: 🐴
+            - generic [ref=e161]: 90%
+          - generic [ref=e162]:
+            - generic [ref=e163]: Fire Storm
+            - generic [ref=e166]: 🐴
+            - generic [ref=e167]: 100%
+          - generic [ref=e168]:
+            - generic [ref=e169]: Ocean Wave
+            - generic [ref=e172]: 🐴
+            - generic [ref=e173]: 96%
+          - generic [ref=e174]:
+            - generic [ref=e175]: Silver Moon
+            - generic [ref=e178]: 🐴
+            - generic [ref=e179]: 94%
+    - generic [ref=e180]:
+      - heading "Bet Slip" [level=2] [ref=e181]
+      - generic [ref=e182]:
+        - generic [ref=e183]: "Bet Type:"
+        - combobox [ref=e184]:
+          - option "Win (1st)" [selected]
+          - option "Place (Top 2-3)"
+          - option "Quinella (1-2 any order)"
+          - option "Trifecta (1-2-3 exact)"
+      - generic [ref=e185]:
+        - generic [ref=e186]: "Stake:"
+        - spinbutton [ref=e187]: "100"
+      - button "Add Bet" [disabled] [ref=e188]
+      - generic [ref=e189]:
+        - heading "Current Bets (1):" [level=3] [ref=e190]
+        - generic [ref=e192]:
+          - generic [ref=e193]:
+            - generic [ref=e194]: win
+            - generic [ref=e195]: "Horses: 1"
+            - generic [ref=e196]: "Stake: 100pt"
+          - button "✕" [ref=e197] [cursor=pointer]
+        - generic [ref=e198]:
+          - paragraph [ref=e199]: "Total Stake: 100pt"
+          - paragraph [ref=e200]: "Max: 4950pt"
+      - button "Start Race" [ref=e201] [cursor=pointer]
+```

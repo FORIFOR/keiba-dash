@@ -10,7 +10,7 @@ export interface Horse {
 }
 
 export interface RaceConfig {
-  numHorses: number; // 6-12
+  numHorses: number; // 6-16
   temperature: number; // τ for Plackett-Luce (15-25)
   margin: number; // Bookmaker margin (e.g., 0.18)
   seed: string;
@@ -93,23 +93,23 @@ export const DIFFICULTY_CONFIGS: Record<Difficulty, Partial<RaceConfig>> = {
   easy: {
     temperature: 25,
     margin: 0.15,
-    numHorses: 6,
+    numHorses: 8,
   },
   standard: {
     temperature: 20,
     margin: 0.18,
-    numHorses: 8,
+    numHorses: 16,
   },
   hard: {
     temperature: 15,
     margin: 0.22,
-    numHorses: 10,
+    numHorses: 16,
   },
 };
 
 export const DEFAULT_SETTINGS: GameSettings = {
   difficulty: 'standard',
-  numHorses: 8,
+  numHorses: 16,
   showRatings: false,
   monteCarloTrials: 50000,
   maxBetPercentage: 0.5,
