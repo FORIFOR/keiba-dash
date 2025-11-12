@@ -31,16 +31,16 @@ describe('Probability and Odds Consistency', () => {
     const empiricalProbs = winCounts.map(count => count / simulations.length);
 
     console.log('\nProbability Comparison:');
-    horses.forEach((horse, i) => {
+    horses.forEach((_horse, i) => {
       console.log(
-        `${horse.name}: Rating=${horse.rating.toFixed(1)} ` +
+        `${_horse.name}: Rating=${_horse.rating.toFixed(1)} ` +
         `Theoretical=${(theoreticalProbs[i] * 100).toFixed(2)}% ` +
         `Empirical=${(empiricalProbs[i] * 100).toFixed(2)}%`
       );
     });
 
     // Check each probability is within reasonable error (±3%)
-    horses.forEach((horse, i) => {
+    horses.forEach((_horse, i) => {
       const diff = Math.abs(theoreticalProbs[i] - empiricalProbs[i]);
       expect(diff).toBeLessThan(0.03); // Within 3%
     });
@@ -64,13 +64,13 @@ describe('Probability and Odds Consistency', () => {
     const trueProbs = calculateWinProbabilities(horses, config.temperature);
 
     console.log('\nOdds vs True Probability:');
-    horses.forEach((horse, i) => {
+    horses.forEach((_horse, i) => {
       const impliedProb = 1 / odds[i];
       const fairOdds = 1 / trueProbs[i];
       const edge = ((impliedProb - trueProbs[i]) / trueProbs[i]) * 100;
 
       console.log(
-        `${horse.name}: ` +
+        `${_horse.name}: ` +
         `TrueProb=${(trueProbs[i] * 100).toFixed(2)}% ` +
         `Odds=${odds[i].toFixed(2)}x ` +
         `FairOdds=${fairOdds.toFixed(2)}x ` +
@@ -123,8 +123,8 @@ describe('Probability and Odds Consistency', () => {
     const strongestHorse = sortedHorses[0];
     const strongestIndex = horses.findIndex(h => h.id === strongestHorse.id);
 
-    horses.forEach((horse, i) => {
-      if (i !== strongestIndex && horse.rating < strongestHorse.rating) {
+    horses.forEach((_horse, i) => {
+      if (i !== strongestIndex && _horse.rating < strongestHorse.rating) {
         expect(winCounts[strongestIndex]).toBeGreaterThan(winCounts[i]);
       }
     });
