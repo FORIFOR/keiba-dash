@@ -267,7 +267,7 @@ export const useGameStore = create<GameStore>()(
         history: state.history,
         settings: state.settings,
       }),
-      migrate: (persistedState: any, version: number) => {
+      migrate: (persistedState: unknown, version: number) => {
         // If old version, reset to defaults
         if (version < STORAGE_VERSION) {
           console.log('[Store] Migrating from old version, resetting to defaults');
@@ -278,7 +278,7 @@ export const useGameStore = create<GameStore>()(
             settings: DEFAULT_SETTINGS,
           };
         }
-        return persistedState;
+        return persistedState as Partial<GameState>;
       },
     }
   )
