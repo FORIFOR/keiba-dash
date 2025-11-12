@@ -194,10 +194,10 @@ function App() {
         <h1 className="text-3xl font-bold text-center">Horse Racing Betting Game</h1>
         <div className="flex justify-between mt-2 text-sm items-center">
           <span>
-            Bankroll: <span className={`font-bold ${bankroll >= 0 ? 'text-yellow-400' : 'text-red-400'}`}>
-              {bankroll >= 0 ? '' : '-'}{Math.abs(bankroll)}pt
+            Bankroll: <span className="font-bold text-yellow-400">
+              {bankroll}pt
             </span>
-            {settings.gameMode === 'unlimited' && <span className="ml-2 text-green-400">(Unlimited)</span>}
+            {settings.gameMode === 'unlimited' && <span className="ml-2 text-green-400">(Practice)</span>}
           </span>
           <span>Race #{raceNumber}</span>
           <div className="flex gap-2 items-center">
@@ -206,10 +206,6 @@ function App() {
               onChange={(e) => {
                 const newMode = e.target.value as 'limited' | 'unlimited';
                 useGameStore.getState().updateSettings({ gameMode: newMode });
-                if (newMode === 'limited' && bankroll < 0) {
-                  useGameStore.getState().updateSettings({ gameMode: 'limited' });
-                  alert('Switching to Limited Mode. Your bankroll will be reset to 10000pt on next game.');
-                }
               }}
               className="px-3 py-1 bg-gray-700 rounded text-sm"
             >
@@ -433,7 +429,7 @@ function App() {
                 </p>
               ) : (
                 <p className="text-sm text-green-400">
-                  Unlimited betting enabled
+                  Practice mode - Bankroll stays constant
                 </p>
               )}
             </div>

@@ -166,10 +166,10 @@ export const useGameStore = create<GameStore>()(
       runRace: () => {
         const state = get();
 
-        // Validate bets
+        // Validate bets (skip bankroll validation in unlimited mode)
         const validation = validateAllBets(
           state.currentBets,
-          state.bankroll,
+          state.settings.gameMode === 'unlimited' ? Infinity : state.bankroll,
           state.settings.maxBetPercentage,
           MIN_BET
         );
@@ -193,8 +193,10 @@ export const useGameStore = create<GameStore>()(
         // Calculate payouts
         const result = resolveRace(state.currentBets, finishOrder, state.currentOdds);
 
-        // Update bankroll
-        const newBankroll = state.bankroll + result.netProfit;
+        // Update bankroll (unlimited mode keeps bankroll constant)
+        const newBankroll = state.settings.gameMode === 'unlimited'
+          ? state.bankroll
+          : state.bankroll + result.netProfit;
         const roi = result.totalStake > 0 ? (result.netProfit / result.totalStake) * 100 : 0;
 
         // Add to history
@@ -213,7 +215,7 @@ export const useGameStore = create<GameStore>()(
         const isGameOver = state.settings.gameMode === 'limited' && newBankroll <= 0;
 
         set({
-          bankroll: state.settings.gameMode === 'unlimited' ? newBankroll : Math.max(0, newBankroll),
+          bankroll: state.settings.gameMode === 'limited' ? Math.max(0, newBankroll) : state.bankroll,
           raceNumber: state.raceNumber + 1,
           history: [...state.history, historyEntry],
           raceInProgress: false,
