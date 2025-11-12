@@ -50,6 +50,7 @@ interface GameStore extends GameState {
 }
 
 const STORAGE_KEY = 'keiba-dash-game-state';
+const STORAGE_VERSION = 2; // Increment when making breaking changes
 
 export const useGameStore = create<GameStore>()(
   persist(
@@ -259,12 +260,26 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: STORAGE_KEY,
+      version: STORAGE_VERSION,
       partialize: (state) => ({
         bankroll: state.bankroll,
         raceNumber: state.raceNumber,
         history: state.history,
         settings: state.settings,
       }),
+      migrate: (persistedState: any, version: number) => {
+        // If old version, reset to defaults
+        if (version < STORAGE_VERSION) {
+          console.log('[Store] Migrating from old version, resetting to defaults');
+          return {
+            bankroll: INITIAL_BANKROLL,
+            raceNumber: 1,
+            history: [],
+            settings: DEFAULT_SETTINGS,
+          };
+        }
+        return persistedState;
+      },
     }
   )
 );
