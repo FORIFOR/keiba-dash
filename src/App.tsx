@@ -208,8 +208,9 @@ function App() {
               {lastResult.result.finishOrder.map((horseId: number, idx: number) => {
                 const horse = currentHorses.find(h => h.id === horseId);
                 return (
-                  <div key={idx} className="flex items-center gap-2 mb-1">
-                    <span className="font-bold">{idx + 1}.</span>
+                  <div key={idx} className="flex items-center gap-3 mb-1">
+                    <span className="font-bold w-6">{idx + 1}.</span>
+                    <span className="font-bold text-yellow-400 w-8">#{horseId}</span>
                     <span style={{ color: horse?.color }}>{horse?.name}</span>
                   </div>
                 );
@@ -256,6 +257,7 @@ function App() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-700">
+                  <th className="p-2 text-center w-16">#</th>
                   <th className="p-2 text-left">Select</th>
                   <th className="p-2 text-left">Horse</th>
                   {settings.showRatings && <th className="p-2">Rating</th>}
@@ -266,6 +268,9 @@ function App() {
               <tbody>
                 {currentHorses.map((horse) => (
                   <tr key={horse.id} className="border-b border-gray-700 hover:bg-gray-700">
+                    <td className="p-2 text-center">
+                      <span className="font-bold text-yellow-400">{horse.id}</span>
+                    </td>
                     <td className="p-2">
                       <input
                         type="checkbox"
@@ -306,6 +311,9 @@ function App() {
                   const progress = raceProgress[horse.id] || 0;
                   return (
                     <div key={horse.id} className="flex items-center gap-3">
+                      <div className="w-8 text-center text-sm font-bold text-yellow-400">
+                        {horse.id}
+                      </div>
                       <div className="w-32 text-sm font-semibold" style={{ color: horse.color }}>
                         {horse.name}
                       </div>
