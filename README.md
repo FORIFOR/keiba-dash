@@ -60,6 +60,36 @@ npm run test:unit    # Run Vitest tests
 npm run test:e2e     # Run Playwright tests
 ```
 
+## Deploy to GitHub Pages
+
+### Automatic Deployment (推奨)
+
+1. GitHubにプッシュ：
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/keiba-dash.git
+git push -u origin main
+```
+
+2. GitHubリポジトリの設定：
+   - Settings → Pages
+   - Source: "GitHub Actions" を選択
+   - 自動的にデプロイされます
+
+3. アクセス：`https://YOUR_USERNAME.github.io/keiba-dash/`
+
+### Manual Deployment
+
+```bash
+npm run build
+# dist/ フォルダの内容を任意の静的ホスティングにアップロード
+```
+
+**注意**: `vite.config.ts` の `base` をリポジトリ名に合わせて変更してください。
+
 ## Technical Details
 
 ### Plackett-Luce Model
