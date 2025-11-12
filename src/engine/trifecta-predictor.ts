@@ -21,6 +21,13 @@ export interface RaceDataPoint {
   trifectaOdds: number;
 }
 
+export interface PatternAnalysis {
+  favoritesWinRate: number;
+  averageWinnerOdds: number;
+  oddsRankCorrelation: number[];
+  upsetFrequency: number;
+}
+
 export class TrifectaPredictor {
   private raceHistory: RaceDataPoint[] = [];
   private readonly MAX_HISTORY = 1000; // Keep last 1000 races
@@ -107,11 +114,11 @@ export class TrifectaPredictor {
   /**
    * Analyze historical patterns
    */
-  private analyzePatterns() {
-    const patterns = {
+  private analyzePatterns(): PatternAnalysis {
+    const patterns: PatternAnalysis = {
       favoritesWinRate: 0,
       averageWinnerOdds: 0,
-      oddsRankCorrelation: [] as number[],
+      oddsRankCorrelation: [],
       upsetFrequency: 0,
     };
 
@@ -182,7 +189,7 @@ export class TrifectaPredictor {
   /**
    * Predict with learned patterns
    */
-  private predictWithPatterns(horses: Horse[], odds: OddsTable, patterns: any): TrifectaPrediction[] {
+  private predictWithPatterns(horses: Horse[], odds: OddsTable, patterns: PatternAnalysis): TrifectaPrediction[] {
     const predictions: TrifectaPrediction[] = [];
 
     // Sort by odds

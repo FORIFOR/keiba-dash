@@ -3,7 +3,7 @@
  * Auto-bets and learns patterns to predict trifecta outcomes
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useGameStore } from '../state/store';
 import { globalPredictor } from '../engine/trifecta-predictor';
 import type { TrifectaPrediction } from '../engine/trifecta-predictor';
@@ -23,21 +23,7 @@ export function TrifectaLearning() {
 
   const store = useGameStore();
 
-  useEffect(() => {
-    let interval: number | null = null;
-
-    if (isLearning && !store.raceInProgress && !store.gameOver) {
-      interval = window.setTimeout(() => {
-        runAutoBet();
-      }, autoBetSpeed);
-    }
-
-    return () => {
-      if (interval) clearTimeout(interval);
-    };
-  }, [isLearning, store.raceInProgress, store.gameOver, autoBetSpeed]);
-
-  const runAutoBet = async () => {
+  const runAutoBet = useCallback(async () => {
     const { currentHorses, currentOdds, addBet, runRace, clearBets } = store;
 
     if (!currentOdds || currentHorses.length === 0) {
@@ -113,7 +99,21 @@ export function TrifectaLearning() {
         store.generateNewRace();
       }, 100);
     }
-  };
+  }, [store, setPredictions, setLearningStats]);
+
+  useEffect(() => {
+    let interval: number | null = null;
+
+    if (isLearning && !store.raceInProgress && !store.gameOver) {
+      interval = window.setTimeout(() => {
+        runAutoBet();
+      }, autoBetSpeed);
+    }
+
+    return () => {
+      if (interval) clearTimeout(interval);
+    };
+  }, [isLearning, store.raceInProgress, store.gameOver, autoBetSpeed, runAutoBet]);
 
   const startLearning = () => {
     setIsLearning(true);
